@@ -75,7 +75,7 @@ DashboardCC/
 ├─ app.py                # Główny plik z kodem Streamlit
 ├─ logo_2021.png         # Logo wyświetlane w sidebar
 ├─ README.md
-└─ requirements.txt      # (opcjonalnie) lista bibliotek
+└─ requirements.txt      # Lista bibliotek
 ```
 
 > **Uwaga:** W kodzie obecnie używane są ścieżki bezwzględne (np. `C:\Users\k.obrebski\Desktop\CCDASH\SalesData.csv`).  
