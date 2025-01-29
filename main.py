@@ -5,6 +5,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import calendar
 
+st.set_page_config(page_title="CC Statystyki", layout="wide")
 # 1) Define the password-check function
 def check_password():
     if "password_correct" not in st.session_state:
@@ -48,7 +49,6 @@ def load_data():
     df_target = process_target_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/TargetData.csv")
     return df_sales, df_products, df_cc, df_target
 
-st.set_page_config(page_title="CC Statystyki", layout="wide")
 df_sales, df_products, df_cc, df_target = load_data()
 pass
 
