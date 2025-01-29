@@ -50,7 +50,7 @@ def load_data():
 
 st.set_page_config(page_title="CC Statystyki", layout="wide")
 df_sales, df_products, df_cc, df_target = load_data()
-    pass
+pass
 
 
 # 1. Funkcje
