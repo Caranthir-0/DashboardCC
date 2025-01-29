@@ -98,14 +98,6 @@ DashboardCC/
 
 ---
 
-## Uwagi Konfiguracyjne
-- **Ścieżki do plików CSV:**  
-  W kodzie domyślnie ustawione są lokalne ścieżki (np. `C:\Users\k.obrebski\Desktop\...`). Aby uniknąć problemów z różnymi systemami operacyjnymi czy lokalizacjami plików, **zaleca się** trzymanie CSV w folderze `data/` (lub innym folderze w repo) i używanie ścieżek względnych.
-- **Logo w sidebarze**:  
-  Obecnie wczytywane jest z `C:\\Users\\k.obrebski\\Desktop\\logo_2021.png`. Po przeniesieniu pliku graficznego do repozytorium (np. do głównego folderu), wystarczy zmienić w kodzie:  
-  ```python
-  st.sidebar.image("logo_2021.png", use_container_width=True)
-  ```
 - **Buforowanie danych**:  
   W Streamlit zastosowano dekorator `@st.cache_data` (od wersji Streamlit 1.18+), który przyspiesza wielokrotne wczytywanie tych samych plików CSV.  
 - **Zmiana widoku**:  
