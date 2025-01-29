@@ -2,7 +2,56 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
 import plotly.express as px
+import plotly.graph_objects as go
 import calendar
+
+# 1) Define the password-check function
+def check_password():
+    if "password_correct" not in st.session_state:
+        st.text_input("Username", key="username")
+        st.text_input("Password", type="password", key="password")
+        if st.button("Login"):
+            if (
+                st.session_state["username"] == st.secrets["auth"]["username"] and
+                st.session_state["password"] == st.secrets["auth"]["password"]
+            ):
+                st.session_state["password_correct"] = True
+                del st.session_state["password"]
+            else:
+                st.session_state["password_correct"] = False
+                st.error("❌ Invalid username or password")
+    elif not st.session_state["password_correct"]:
+        st.text_input("Username", key="username")
+        st.text_input("Password", type="password", key="password")
+        if st.button("Login"):
+            if (
+                st.session_state["username"] == st.secrets["auth"]["username"] and
+                st.session_state["password"] == st.secrets["auth"]["password"]
+            ):
+                st.session_state["password_correct"] = True
+                del st.session_state["password"]
+            else:
+                st.session_state["password_correct"] = False
+                st.error("❌ Invalid username or password")
+
+    return st.session_state.get("password_correct", False)
+
+# 2) If not authenticated, stop the app here
+if not check_password():
+    st.stop()
+
+# 3) Now your original code begins here:
+@st.cache_data
+def load_data():
+    df_sales, df_products = process_sales_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/SalesData.csv")
+    df_cc = process_call_center_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/CallCenterData.csv")
+    df_target = process_target_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/TargetData.csv")
+    return df_sales, df_products, df_cc, df_target
+
+st.set_page_config(page_title="CC Statystyki", layout="wide")
+df_sales, df_products, df_cc, df_target = load_data()
+    pass
+
 
 # 1. Funkcje
 def process_sales_data(file_path):
@@ -19,6 +68,7 @@ def process_sales_data(file_path):
         "N_GRUPA_PROD_5": "Kategoria5"
     })
     df["Data"] = pd.to_datetime(df["Data"]).dt.date
+    df = df[df['Marża (PLN)'] > 0 ]
 
     df_products = df.groupby(["Data", "Kategoria2", "Kategoria5"], as_index=False).agg({
         "Obrót (PLN)": "sum",
@@ -37,18 +87,20 @@ def process_sales_data(file_path):
 
 def process_call_center_data(file_path):
     df = pd.read_csv(file_path)
-    df = df.drop(columns=['Unnamed: 27', 'Zgłoszenie', 'Routing'])
+    #df = df.drop(columns=['Unnamed: 27', 'Zgłoszenie', 'Routing'])
     df['MERYTORYCZNY'] = df.apply(
-        lambda row: 1 if (
-            row['Status w kampanii'] in [
-                "Klient niezainteresowany",
-                "Klient wstępnie zainteresowany",
-                "Klient złożył zamówienie",
-                "Zamówienie złożone podczas rozmowy"
-            ] or (pd.notna(row['Grupa tematu']) and "Mikroinstalacje" in row['Grupa tematu'])
-        ) else 0,
-        axis=1
-    )
+            lambda row: 1 if (
+                row['Status w kampanii'] in [
+                    "Klient niezainteresowany",
+                    "Klient wstępnie zainteresowany",
+                    "Klient złożył zamówienie",
+                    "Zamówienie złożone podczas rozmowy"
+                ] or (pd.notna(row['Grupa tematu']) and "Mikroinstalacje" in row['Temat rozmowy'])
+                or (pd.notna(row['Grupa tematu']) and "CC - Call merytoryczny" in row['Temat rozmowy'])
+                or  ("Call merytoryczny" in str(row['Status w kampanii']))
+                #or (pd.notna(row['Grupa tematu']) and "Call merytoryczny + follow up" in row['Status w kampanii'])
+    ) else 0,
+    axis = 1 )
     df["Data"] = pd.to_datetime(df["Data połączenia"]).dt.date
     df_grouped = df.groupby(["Data", "Kampania", "Agent"], as_index=False).agg({
         "ID kampanii": "count",
@@ -60,9 +112,9 @@ def process_call_center_data(file_path):
         "Rezultat": "Poł. odebrane",
         "MERYTORYCZNY" : "W tym merytoryczne"
     })
-    df_grouped["% merytorycznych"] = df_grouped["W tym merytoryczne"]/ df_grouped["Połączenia wychodzące"]
+    df_grouped["% merytorycznych"] = (df_grouped["W tym merytoryczne"]/ df_grouped["Połączenia wychodzące"]) * 100
     df_grouped["Poł. utracone"] = df_grouped["Połączenia wychodzące"] - df_grouped["Poł. odebrane"]
-    df_grouped["% utraconych"] = df_grouped["Poł. utracone"] / df_grouped["Połączenia wychodzące"] * 100
+    df_grouped["% utraconych"] = (df_grouped["Poł. utracone"] / df_grouped["Połączenia wychodzące"]) * 100
     return df_grouped
 
 def process_target_data(file_path):
@@ -87,7 +139,7 @@ df_sales, df_products, df_cc, df_target = load_data()
 
 #
 # 2. Sidebar
-st.sidebar.image(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/logo_2021.png", use_container_width=True)
+st.sidebar.image("https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/logo_2021.png", use_container_width=True)
 st.sidebar.header("Opcje")
 view_option = st.sidebar.selectbox("Wybierz zakładkę", ["Sprzedaż", "Obsługa Klienta (CC)"])
 
@@ -159,29 +211,51 @@ if view_option == "Sprzedaż":
         st.metric("w tym Encor", value=f"{total_encor}")
 
     # Trend sprzedaży
-    dzienna_sprzedaz = df_sales_filtered.groupby("Data")["Obrót (PLN)"].sum().reset_index()
+    dzienna_sprzedaz = df_sales_filtered.groupby("Data")["Marża (PLN)"].sum().reset_index()
+    dzienny_obrót = df_sales_filtered.groupby("Data")["Obrót (PLN)"].sum().reset_index()
+    
     kumulatywna_sprzedaz = dzienna_sprzedaz.copy()
-    kumulatywna_sprzedaz["Kumulatywnie"] = kumulatywna_sprzedaz["Obrót (PLN)"].cumsum()
+    kumulatywna_sprzedaz["Kumulatywnie"] = kumulatywna_sprzedaz["Marża (PLN)"].cumsum()
 
-    st.write("### Trend dzienny Sprzedaży oraz Kumulatyw")
+    st.write("### Trend dzienny Sprzedaży")
     colA, colB = st.columns(2)
     with colA:
-        fig_daily_sales = px.line(
-            dzienna_sprzedaz, 
-            x="Data", 
-            y="Obrót (PLN)", 
-            title="Trend dzienny Sprzedaży",
-            labels={"Obrót (PLN)": "Obrót [kPLN]", "Data": "Data"}
+        fig_daily_sales = go.Figure()
+        fig_daily_sales.add_trace(
+            go.Scatter(
+                x=dzienna_sprzedaz["Data"],
+                y=dzienna_sprzedaz["Marża (PLN)"],
+                name="Marża",
+                mode="lines+markers",
+                line=dict(color="#d22730"),
+                #yaxis="y2"   # wskazanie użycia drugiej osi
+            )
         )
-        fig_daily_sales.update_traces(line=dict(color="#d22730"), mode="lines+markers" )
+        #fig_daily_sales.update_traces(line=dict(color="#d22730"), mode="lines+markers" )
+        fig_daily_sales.add_trace(
+            go.Scatter(
+                x=dzienny_obrót["Data"],
+                y=dzienny_obrót["Obrót (PLN)"],
+                name="Obrót",
+                mode="lines+markers",
+                line=dict(color="blue"),
+                yaxis="y2"   # wskazanie użycia drugiej osi
+            )
+        )
+        fig_daily_sales.update_layout(
+            yaxis2=dict(
+                overlaying="y",
+                side="right",
+            )
+        )
         st.plotly_chart(fig_daily_sales, use_container_width=True)
     with colB:
         fig_cumulative_sales = px.area(
             kumulatywna_sprzedaz, 
             x="Data", 
             y="Kumulatywnie", 
-            title="Trend Kumulatywny Sprzedaży",
-            labels={"Kumulatywnie": "Kumulatywnie", "Data": "Data"}
+            title="Trend Kumulatywny Marży",
+            labels={"Kumulatywnie": "Marża kumulatywnie", "Data": "Data"}
         )
         fig_cumulative_sales.update_traces(line=dict(color="#d22730"))
         st.plotly_chart(fig_cumulative_sales, use_container_width=True)
@@ -202,9 +276,7 @@ if view_option == "Sprzedaż":
         "Połączenia wychodzące": "sum",
         "Poł. odebrane": "sum",
         "W tym merytoryczne":"sum",
-        "% merytorycznych":"mean",
-        "Poł. utracone": "sum",
-        "% utraconych": "mean",
+        "% merytorycznych":"mean"
 
     })
 
@@ -218,6 +290,7 @@ if view_option == "Sprzedaż":
 
     # Opcjonalnie: usuń kolumnę "Agent", jeśli jest zbędna
     df_merged = df_merged.drop(columns=["Agent"])
+    df_merged = df_merged.rename(columns={'Falowniki Encor (szt.)': 'Encor(szt.)', 'Liczba faktur': 'Faktury'})
 
     # -- Sekcja z tabelą i wykresem obok --
     col_chart, col_tab = st.columns([1, 1])  # podział ekranu: lewa (tabela), prawa (wykres)
@@ -233,10 +306,7 @@ if view_option == "Sprzedaż":
             "Połączenia wychodzące": "{:,.0f}",
             "Poł. odebrane": "{:,.0f}",
             "W tym merytoryczne":"{:,.0f}",
-            "% merytorycznych":"{:,.0f}",
-            "Poł. utracone": "{:,.0f}",
-            "% utraconych": "{:,.0f}",
-
+            "% merytorycznych":"{:,.0f}"
         }))
     
     with col_chart:
@@ -304,4 +374,8 @@ elif view_option == "Obsługa Klienta (CC)":
 
     st.write("### Rozbicie w podziale na kolejki IVR")
     st.dataframe(po_kolejkach.style.format({"% utraconych": "{:,.1f}"}))
+
+
+
+
     
