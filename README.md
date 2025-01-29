@@ -121,6 +121,4 @@ Wszelkie sugestie i uwagi proszę zgłaszać w zakładce [Issues](https://github
 ---
 
 ## Licencja
-Ten projekt jest dostępny na licencji **Corab SA Copyright**. Szczegółowe informacje znajdziesz w pliku [LICENSE](LICENSE) (jeśli został dodany do repozytorium).
-
----
+Ten projekt jest dostępny na licencji **Corab SA Copyright**
