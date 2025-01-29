@@ -91,7 +91,7 @@ df_sales, df_products, df_cc, df_target = load_data()
 
 #
 # 2. Sidebar
-st.sidebar.image("C:\\Users\\k.obrebski\\Desktop\\logo_2021.png", use_container_width=True)
+st.sidebar.image("https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/logo_2021.png", use_container_width=True)
 st.sidebar.header("Opcje")
 view_option = st.sidebar.selectbox("Wybierz zakładkę", ["Sprzedaż", "Obsługa Klienta (CC)"])
 
