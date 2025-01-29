@@ -77,9 +77,9 @@ def process_target_data(file_path):
 
 @st.cache_data
 def load_data():
-    df_sales, df_products = process_sales_data(r"C:\Users\k.obrebski\Desktop\CCDASH\SalesData.csv")
-    df_cc = process_call_center_data(r"C:\Users\k.obrebski\Desktop\CCDASH\CallCenterData.csv")
-    df_target = process_target_data(r"C:\Users\k.obrebski\Desktop\CCDASH\TargetData.csv")
+    df_sales, df_products = process_sales_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/SalesData.csv")
+    df_cc = process_call_center_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/CallCenterData.csv")
+    df_target = process_target_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/TargetData.csv")
     return df_sales, df_products, df_cc, df_target
 
 st.set_page_config(page_title="CC Statystyki", layout="wide")
