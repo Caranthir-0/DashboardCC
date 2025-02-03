@@ -93,7 +93,7 @@ def process_target_data(file_path):
 @st.cache_data
 def load_data():
     df_sales, df_products = process_sales_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/SalesData.csv")
-    df_cc = process_call_center_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/Rozmowy kampanii.csv")
+    df_cc = process_call_center_data('data/Rozmowy kampanii.csv')
     df_farmer = process_farmer_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/Rozmowy infolinii.csv")
     df_target = process_target_data(r"https://raw.githubusercontent.com/Caranthir-0/DashboardCC/main/data/TargetData.csv")
     return df_sales, df_products, df_farmer, df_cc, df_target
