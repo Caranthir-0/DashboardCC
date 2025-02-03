@@ -94,8 +94,8 @@ def process_target_data(file_path):
 def load_data():
     df_sales, df_products = process_sales_data('data/SalesData.csv')
     df_cc = process_call_center_data('data/Rozmowy kampanii.csv')
-    df_farmer = process_farmer_data('Rozmowy infolinii.csv')
-    df_target = process_target_data('TargetData.csv')
+    df_farmer = process_farmer_data('data/Rozmowy infolinii.csv')
+    df_target = process_target_data('data/TargetData.csv')
     return df_sales, df_products, df_farmer, df_cc, df_target
 
 st.set_page_config(page_title="CC Statystyki", layout="wide")
