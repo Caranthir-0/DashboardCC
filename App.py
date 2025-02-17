@@ -266,7 +266,7 @@ if view_option == "Sprzedaż":
     df_merged['% celu marży'] = df_merged['Marża (PLN)'] / df_merged['Cel Marży']
     df_merged['% celu calli'] = df_merged['W tym merytoryczne'] / df_merged['cel calle']
     df_merged = df_merged.drop(columns=["Agent", "Cel Marży","cel calle"])
-    df_merged = df_merged.rename(columns={'Falowniki Encor (szt.)': 'Encor(szt.)', 'Liczba faktur': 'Faktury', 'Połączenia wychodzące': 'Poł. wychodzące', 'Handlowiec': 'Handlowiec        '})
+    df_merged = df_merged.rename(columns={'Falowniki Encor (szt.)': 'Encor(szt.)', 'Liczba faktur': 'Faktury', 'Połączenia wychodzące': 'Poł. wychodzące', 'Handlowiec': 'Handlowiec            '})
 
     # -- Sekcja z tabelą i wykresem obok --
     col_chart, col_tab = st.columns([1, 1])  # podział ekranu: lewa (tabela), prawa (wykres)
