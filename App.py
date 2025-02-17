@@ -101,6 +101,12 @@ def load_data():
 st.set_page_config(page_title="CC Statystyki", layout="wide")
 df_sales, df_products, df_farmer, df_cc, df_target = load_data()
 
+# temporary modifs
+
+df_target["cel calle"] = df_target.apply(lambda row: 665 if row["TYP"] == "Indywidualny" and row["Data"].month == 1 else 
+                           (558 if row["TYP"] == "Indywidualny" and row["Data"].month == 2 else None), axis=1)
+
+
 #
 # 2. Sidebar
 st.sidebar.image('logo_2021.png', use_container_width=True)
@@ -240,8 +246,7 @@ if view_option == "Sprzedaż":
     po_kolejkach = df_cc_filtered.groupby("Agent", as_index=False).agg({
         "Połączenia wychodzące": "sum",
         "Poł. odebrane": "sum",
-        "W tym merytoryczne":"sum",
-        "% merytorycznych":"mean"
+        "W tym merytoryczne":"sum"
 
     })
 
@@ -253,8 +258,14 @@ if view_option == "Sprzedaż":
         right_on="Agent"  # Klucz w prawej tabeli
     )
 
-
-    df_merged = df_merged.drop(columns=["Agent"])
+    df_merged = df_merged.merge(
+        df_target_filtered[["Handlowiec","Cel Marży", "cel calle"]],
+        how = "left",
+        on="Handlowiec"
+    )
+    df_merged['% celu marży'] = df_merged['Marża (PLN)'] / df_merged['Cel Marży']
+    df_merged['% celu calli'] = df_merged['W tym merytoryczne'] / df_merged['cel calle']
+    df_merged = df_merged.drop(columns=["Agent", "Cel Marży","cel calle"])
     df_merged = df_merged.rename(columns={'Falowniki Encor (szt.)': 'Encor(szt.)', 'Liczba faktur': 'Faktury'})
 
     # -- Sekcja z tabelą i wykresem obok --
@@ -271,7 +282,8 @@ if view_option == "Sprzedaż":
             "Połączenia wychodzące": "{:,.0f}",
             "Poł. odebrane": "{:,.0f}",
             "W tym merytoryczne":"{:,.0f}",
-            "% merytorycznych":"{:,.0f}"
+            '% celu marży':"{:.2%}",
+            '% celu calli': "{:.2%}"
         }))
     
     with col_chart:
