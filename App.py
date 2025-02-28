@@ -278,12 +278,12 @@ if view_option == "Sprzedaż":
         st.dataframe(df_merged.style.format({
             "Obrót (PLN)": "{:,.0f}",
             "Marża (PLN)": "{:,.0f}",
+            '% celu marży':"{:.2%}",
             "Faktury": "{:,.0f}",
             "w tym Encor": "{:,.0f}",
-            "Połączenia wychodzące": "{:,.0f}",
+            "Poł. wychodzące": "{:,.0f}",
             "Poł. odebrane": "{:,.0f}",
             "W tym merytoryczne":"{:,.0f}",
-            '% celu marży':"{:.2%}",
             '% celu calli': "{:.2%}"
         }))
     
